@@ -22,11 +22,13 @@ classdef Points2Joints < handle
                 if isempty(points4Link), disp('no points found around last joint'); break; end
 
                 maxInliersAmnt = 0;
+                sumD = inf;
                 for theta = thetaVec
                     pEndTest = pStart + obj.LinkLength*[cos(theta),sin(theta)];
                     [D,d_t] = obj.DistanceTo2PointsLine(pStart,pEndTest,points4Link);
                     iterationInliersAmnt = sum(D < obj.maxDistance & d_t > 0);
-                    if iterationInliersAmnt > maxInliersAmnt
+                    if iterationInliersAmnt > maxInliersAmnt || iterationInliersAmnt == maxInliersAmnt && sum(D) < sumD
+                        sumD = sum(D);
                         maxInliersAmnt = iterationInliersAmnt;
                         pEnd = pEndTest;
                     end

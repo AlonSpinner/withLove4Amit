@@ -9,7 +9,7 @@ disp(obj.pJoints);
 %% Points2
 load(fullfile('data','Points2.mat'));
 obj = Points2Joints(points);
-obj.LinkLength = 35;
+obj.LinkLength = 15;
 obj.findJoints();
 obj.plot();
 disp(obj.pJoints);
@@ -20,4 +20,3 @@ obj = Points2Joints(points);
 obj.findJoints;
 obj.plot();
 disp(obj.pJoints);
-
