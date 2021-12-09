@@ -30,9 +30,9 @@ classdef Points2Joints < handle
                         pEnd = pEndTest;
                     end
                 end
-                mpJoints(end+1,:) = pEnd(1,:);
+                mpJoints(end+1,:) = pEnd;
                 mpoints(indcies,:) = []; %destroy points that we already went through
-                if isempty(mpoints) || isempty(D), break, end
+                if isempty(mpoints), break, end
             end
         
               %delete last point if there is nothing really near it
