@@ -7,6 +7,7 @@ classdef Points2Joints < handle
         points = [];
         pJoints = [];
         bezOrder = 4;
+        weightRange = [1,2]; %[weight on close points, weight on far points]
     end
     methods (Access = public)
         function obj = Points2Joints(points)
@@ -21,15 +22,20 @@ classdef Points2Joints < handle
                 [points4Link,indcies] = obj.FilterPointsByRadius(pStart,obj.LinkLength,mpoints);
                 if isempty(points4Link), disp('no points found around last joint'); break; end
 
-                maxInliersAmnt = 0;
+                MaxwInliersAmount = 0;
                 sumD = inf;
                 for theta = thetaVec
                     pEndTest = pStart + obj.LinkLength*[cos(theta),sin(theta)];
-                    [D,d_t] = obj.DistanceTo2PointsLine(pStart,pEndTest,points4Link);
-                    iterationInliersAmnt = sum(D < obj.maxDistance & d_t > 0);
-                    if iterationInliersAmnt > maxInliersAmnt || iterationInliersAmnt == maxInliersAmnt && sum(D) < sumD
-                        sumD = sum(D);
-                        maxInliersAmnt = iterationInliersAmnt;
+                    [D2line,d_t] = obj.DistanceTo2PointsLine(pStart,pEndTest,points4Link);
+                    inlierIndcies = D2line < obj.maxDistance & d_t > 0;
+                    D2Start = vecnorm(points4Link-pStart,2,2);
+                    w = obj.mapfun(D2Start,min(D2Start),max(D2Start),obj.weightRange(1),obj.weightRange(2));
+                    wInliersAmount=sum(w.*inlierIndcies);
+                    iterartionSumD = sum(D2line(inlierIndcies));
+                    if wInliersAmount > MaxwInliersAmount ||...
+                        wInliersAmount == MaxwInliersAmount && iterartionSumD < sumD
+                        sumD = iterartionSumD;
+                        MaxwInliersAmount = wInliersAmount;
                         pEnd = pEndTest;
                     end
                 end
@@ -190,5 +196,10 @@ classdef Points2Joints < handle
             end
         end
 
+        function output = mapfun(value,fromLow,fromHigh,toLow,toHigh)
+            % from https://viewer.mathworks.com/?viewer=plain_code&url=https%3A%2F%2Fwww.mathworks.com%2Fmatlabcentral%2Fmlc-downloads%2Fdownloads%2Fsubmissions%2F61213%2Fversions%2F1%2Fcontents%2Fmapfun.m&embed=web
+            % Created by David Coventry on 1/19/2017
+            output = (value - fromLow) .* (toHigh - toLow) ./ (fromHigh - fromLow) + toLow;
+        end
     end
 end
